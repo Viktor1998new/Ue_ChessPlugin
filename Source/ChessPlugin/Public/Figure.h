@@ -44,4 +44,5 @@ struct CHESSPLUGIN_API FFigure {
 
 	void SetLocation(FVector2D Position, float SizeGrid, FIntPoint To, float OffsetZ);
 
+	bool IsMoveSafe(FIntPoint Move) const;
 };

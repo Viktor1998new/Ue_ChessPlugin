@@ -53,6 +53,7 @@ void AChessActor::Move(FIntPoint From, FIntPoint To)
 					}
 					
 					Figures[i].SetLocation(L_Position, SizeGrid, To, OffsetZ);
+
 					return;
 				}
 			}

@@ -30,6 +30,64 @@ void FFigure::SetLocation(FVector2D Position, float SizeGrid, FIntPoint To, floa
 	IsMove = true;
 }
 
+bool FFigure::IsMoveSafe(FIntPoint Move) const
+{
+	bool L_Return = false;
+
+	for (int32 i = 0; i < Chess->Figures.Num(); i++)
+	{
+		if (Chess->Figures[i].Figure == Figure || Chess->Figures[i].Team == Team)
+			continue;
+
+		FIntPoint L_EnemyLocation = Chess->Figures[i].Location;
+
+		switch (Chess->Figures[i].Type)
+		{
+		case EFigureType::Bishop:
+			
+			L_Return = FMath::Abs(L_EnemyLocation.X - Move.X) == FMath::Abs(L_EnemyLocation.Y - Move.Y);
+			
+			break;
+
+		case EFigureType::Rock:
+			
+			L_Return = L_EnemyLocation.X == Move.X || L_EnemyLocation.Y == Move.Y;
+			
+			break;
+		
+		case EFigureType::Queeu:
+			
+			L_Return = L_EnemyLocation.X == Move.X || L_EnemyLocation.Y == Move.Y || FMath::Abs(L_EnemyLocation.X - Move.X) == FMath::Abs(L_EnemyLocation.Y - Move.Y);
+			
+			break;
+
+			//No work
+		case EFigureType::King:
+
+			int knightMoves[8][2] = {
+				   {2, 1}, {2, -1}, {-2, 1}, {-2, -1},
+				   {1, 2}, {1, -2}, {-1, 2}, {-1, -2}
+			};
+
+			for (const auto& knightMove : knightMoves) {
+				int newX = L_EnemyLocation.X + knightMove[0];
+				int newY = L_EnemyLocation.Y + knightMove[1];
+				if (newX == Move.X && newY == Move.Y) {
+					L_Return = true;
+					break;
+				}
+			}
+
+			break;
+		}
+
+		if (L_Return)
+			break;
+	}
+
+	return L_Return;
+}
+
 void FFigure::GetMoves(TArray<FIntPoint>& Moves) const {
 
 	int32 direction_King[8][2] = {
@@ -164,7 +222,9 @@ void FFigure::GetMoves(TArray<FIntPoint>& Moves) const {
 			auto L_Move = FIntPoint(Location.X + dir[0], Location.Y + dir[1]);
 
 			if ((L_Move.X >= 0 && L_Move.X <= 7) && (L_Move.Y >= 0 && L_Move.Y <= 7)) {
-				Moves.Add(L_Move);
+				
+				if (!IsMoveSafe(L_Move))
+					Moves.Add(L_Move);
 			}
 		}
 
