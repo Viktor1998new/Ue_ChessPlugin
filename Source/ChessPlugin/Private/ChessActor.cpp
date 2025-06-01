@@ -11,94 +11,6 @@ AChessActor::AChessActor()
 	SetRootComponent(Root);
 }
 
-void AChessActor::BeginPlay()
-{
-	Super::BeginPlay();
-
-}
-
-void AChessActor::Move(FIntPoint From, FIntPoint To)
-{
-	FVector2D L_Start = FVector2D(FieldSize / 2.0f) * -1.0f;
-	float L_GripCenter = SizeGrid / 2.0f;
-	FVector2D L_Position = L_Start + FVector2D(L_GripCenter);
-
-	TArray<FIntPoint> L_Moves;
-
-	for (int32 i = 0; i < Figures.Num(); i++) {
-
-		if (Figures[i].Location == From) {
-
-			Figures[i].GetMoves(L_Moves);
-
-			for (int32 b = 0; b < L_Moves.Num(); b++) {
-
-				if (To == L_Moves[b]) {
-
-					for (int32 c = 0; c < Figures.Num(); c++)
-					{
-						if (Figures[c].Location == To) {
-
-							if (Figures[c].Team != Figures[i].Team) {
-
-								Figures[c].Figure->DestroyComponent();
-								Figures[i].SetLocation(L_Position, SizeGrid, To, OffsetZ);
-								Figures.RemoveAt(c);
-
-								return;
-							}else {
-								return;
-							}
-						}
-					}
-					
-					Figures[i].SetLocation(L_Position, SizeGrid, To, OffsetZ);
-
-					return;
-				}
-			}
-
-			break;
-		}
-	}
-}
-
-TArray<FIntPoint> AChessActor::GetMove(FIntPoint From)
-{
-	FVector2D L_Start = FVector2D(FieldSize / 2.0f) * -1.0f;
-	float L_GripCenter = SizeGrid / 2.0f;
-
-	TArray<FIntPoint> L_Moves;
-
-	for (int32 i = 0; i < Figures.Num(); i++) {
-
-		if (Figures[i].Location == From) {
-
-			Figures[i].GetMoves(L_Moves);
-
-			for (int32 b = 0; b < L_Moves.Num(); b++) {
-
-				FIntPoint L_I = L_Moves[b] * SizeGrid;
-				L_I += FIntPoint(L_Start.X + L_GripCenter, L_Start.Y + L_GripCenter);
-				L_Moves[b] = L_I;
-			}
-		}
-	}
-
-	return L_Moves;
-}
-
-bool AChessActor::IsCeilBusy(FIntPoint Location) const
-{
-	for (int32 i = 0; i < Figures.Num(); i++)
-	{
-		if (Figures[i].Location == Location) {
-			return true;
-		}
-	}
-
-	return false;
-}
 
 void AChessActor::OnConstruction(const FTransform& Transform)
 {
@@ -134,6 +46,7 @@ void AChessActor::OnConstruction(const FTransform& Transform)
 			AddInstanceComponent(L_Figure_Pawn);
 			L_Figure_Pawn->RegisterComponent();
 			L_Figure_Pawn->CreationMethod = EComponentCreationMethod::Instance;
+			
 			Figures.Add(FFigure(this, L_Figure_Pawn, Team, Team == 0 ? FIntPoint(1, i) : FIntPoint(6, 7 - i), L_FigureT));
 			L_Figure_Pawn->AttachToComponent(RootComponent, FAttachmentTransformRules::SnapToTargetNotIncludingScale);
 
@@ -182,6 +95,7 @@ void AChessActor::OnConstruction(const FTransform& Transform)
 			AddInstanceComponent(L_Figure);
 			L_Figure->RegisterComponent();
 			L_Figure->CreationMethod = EComponentCreationMethod::Instance;
+
 			Figures.Add(FFigure(this, L_Figure, Team, Team == 0 ? FIntPoint(0, i) : FIntPoint(7, 7 - i), L_FigureT));
 			L_Figure->AttachToComponent(RootComponent, FAttachmentTransformRules::SnapToTargetNotIncludingScale);
 
@@ -202,4 +116,126 @@ void AChessActor::OnConstruction(const FTransform& Transform)
 	}
 
 	DrawDebugBox(GetWorld(), GetActorLocation(), FVector(FVector2D(FieldSize / 2.0f), 2.0f), FColor::Red, false, INFINITY);
+}
+
+void AChessActor::BeginPlay()
+{
+	Super::BeginPlay();
+
+}
+
+bool AChessActor::Move(FIntPoint From, FIntPoint To)
+{
+	FVector2D L_Start = FVector2D(FieldSize / 2.0f) * -1.0f;
+	float L_GripCenter = SizeGrid / 2.0f;
+	FVector2D L_Position = L_Start + FVector2D(L_GripCenter);
+
+	TArray<FIntPoint> L_Moves;
+
+	for (int32 i = 0; i < Figures.Num(); i++) {
+
+		if (Figures[i].Location == From) {
+			
+			if (Figures[i].Team != ActiveTeam)
+				return false;
+
+			Figures[i].GetMoves(L_Moves , bIsAttackKing);
+
+			for (int32 b = 0; b < L_Moves.Num(); b++) {
+
+				if (To == L_Moves[b]) {
+
+					for (int32 c = 0; c < Figures.Num(); c++)
+					{
+						if (Figures[c].Location == To) {
+
+							if (Figures[c].Team != Figures[i].Team) {
+
+								Figures[c].Figure->DestroyComponent();
+								Figures[i].SetLocation(L_Position, SizeGrid, To, OffsetZ);
+								Figures.RemoveAt(c);
+								bIsAttackKing = IsAttackKing(Figures[i]);
+
+								ActiveTeam = ActiveTeam == 0 ? 1 : 0;
+
+								return true;
+							}else {
+								return false;
+							}
+						}
+					}
+					
+					Figures[i].SetLocation(L_Position, SizeGrid, To, OffsetZ);
+					bIsAttackKing = IsAttackKing(Figures[i]);
+
+					ActiveTeam = ActiveTeam == 0 ? 1 : 0;
+					return true;
+				}
+			}
+
+			break;
+		}
+	}
+
+	return false;
+
+}
+
+TArray<FIntPoint> AChessActor::GetMove(FIntPoint From)
+{
+	FVector2D L_Start = FVector2D(FieldSize / 2.0f) * -1.0f;
+	float L_GripCenter = SizeGrid / 2.0f;
+
+	TArray<FIntPoint> L_Moves;
+
+	for (int32 i = 0; i < Figures.Num(); i++) {
+
+		if (Figures[i].Location == From) {
+
+			Figures[i].GetMoves(L_Moves, bIsAttackKing);
+
+			for (int32 b = 0; b < L_Moves.Num(); b++) {
+
+				FIntPoint L_I = L_Moves[b] * SizeGrid;
+				L_I += FIntPoint(L_Start.X + L_GripCenter, L_Start.Y + L_GripCenter);
+				L_Moves[b] = L_I;
+			}
+		}
+	}
+
+	return L_Moves;
+}
+
+bool AChessActor::IsCeilBusy(FIntPoint Location) const
+{
+	for (int32 i = 0; i < Figures.Num(); i++)
+	{
+		if (Figures[i].Location == Location) {
+			return true;
+		}
+	}
+
+	return false;
+}
+
+bool AChessActor::IsAttackKing(FFigure Figure)
+{
+	TArray<FIntPoint> L_Moves;
+
+	Figure.GetMoves(L_Moves, false);
+
+	for (int32 i = 0; i < L_Moves.Num(); i++) {
+
+		for (int32 f = 0; f < Figures.Num(); f++) {
+
+			if (Figure.Team == Figures[f].Team || Figures[f].Type != EFigureType::King)
+				continue;
+			
+			if (Figures[f].Location == L_Moves[i])
+				return true;
+
+		}
+	}
+
+	return false;
 }

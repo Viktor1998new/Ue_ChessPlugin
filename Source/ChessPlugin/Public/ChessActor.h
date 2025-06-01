@@ -91,6 +91,9 @@ public:
 
 	UPROPERTY(VisibleAnywhere, BlueprintReadOnly)
 		float SizeGrid;
+	
+	UPROPERTY(VisibleAnywhere, BlueprintReadOnly)
+		bool bIsAttackKing;
 
 	UPROPERTY(BlueprintReadWrite)
 		uint8 ActiveTeam;
@@ -108,12 +111,16 @@ protected:
 public:
 
 	UFUNCTION(BlueprintCallable)
-		void Move(FIntPoint From, FIntPoint To);
+		bool Move(FIntPoint From, FIntPoint To);
 		
 	UFUNCTION(BlueprintPure)
 		TArray<FIntPoint> GetMove(FIntPoint From);
+	
+	UFUNCTION()
+		bool IsCeilBusy(FIntPoint Location) const;
 
-	bool IsCeilBusy(FIntPoint Location) const;
+	UFUNCTION()
+		bool IsAttackKing(FFigure Figure);
 
 	void OnConstruction(const FTransform& Transform) override;
 };

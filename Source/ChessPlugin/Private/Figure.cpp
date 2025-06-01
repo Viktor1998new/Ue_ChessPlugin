@@ -88,7 +88,7 @@ bool FFigure::IsMoveSafe(FIntPoint Move) const
 	return L_Return;
 }
 
-void FFigure::GetMoves(TArray<FIntPoint>& Moves) const {
+void FFigure::GetMoves(TArray<FIntPoint>& Moves, bool IsAttackKing) const {
 
 	int32 direction_King[8][2] = {
 		{1, 1},{-1, -1}, {1, -1}, {-1, 1}, {1, 0},
@@ -114,33 +114,36 @@ void FFigure::GetMoves(TArray<FIntPoint>& Moves) const {
 	case EFigureType::Pawn:
 
 		if (Team == 0) {
-			if (!Chess->IsCeilBusy(Location + FIntPoint(1, 0)))
+
+			if (!Chess->IsCeilBusy(Location + FIntPoint(1, 0))) {
 				Moves.Add(Location + FIntPoint(1, 0));
+				
+				if (!IsMove && !Chess->IsCeilBusy(Location + FIntPoint(2, 0)))
+					Moves.Add(Location + FIntPoint(2, 0));
+			}
 
 			if (Chess->IsCeilBusy(Location + FIntPoint(1, 1)))
 				Moves.Add(Location + FIntPoint(1, 1));
 
 			if (Chess->IsCeilBusy(Location + FIntPoint(1, -1)))
 				Moves.Add(Location + FIntPoint(1, -1));
-
-			if (!IsMove && !Chess->IsCeilBusy(Location + FIntPoint(2, 0))) {
-				Moves.Add(Location + FIntPoint(2, 0));
-			}
 		}
 		else {
-			if(!Chess->IsCeilBusy(Location - FIntPoint(1, 0)))
+
+			if (!Chess->IsCeilBusy(Location - FIntPoint(1, 0))) {
 				Moves.Add(Location - FIntPoint(1, 0));
+
+				if (!IsMove && !Chess->IsCeilBusy(Location - FIntPoint(2, 0))) 
+					Moves.Add(Location - FIntPoint(2, 0));
+			}
 
 			if (Chess->IsCeilBusy(Location - FIntPoint(1, 1)))
 				Moves.Add(Location - FIntPoint(1, 1));
 			
 			if (Chess->IsCeilBusy(Location - FIntPoint(1, -1)))
 				Moves.Add(Location - FIntPoint(1, -1));
-
-			if (!IsMove && !Chess->IsCeilBusy(Location - FIntPoint(2, 0))) {
-				Moves.Add(Location - FIntPoint(2, 0));
-			}
 		}
+
 		break;
 
 	case EFigureType::Rock:
