@@ -62,7 +62,7 @@ bool FFigure::IsMoveSafe(FIntPoint Move) const
 			break;
 
 			//No work
-		case EFigureType::King:
+		case EFigureType::Knight:
 
 			int knightMoves[8][2] = {
 				   {2, 1}, {2, -1}, {-2, 1}, {-2, -1},
