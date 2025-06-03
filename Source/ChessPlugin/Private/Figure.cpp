@@ -36,7 +36,7 @@ bool FFigure::IsMoveSafe(FIntPoint Move) const
 
 	for (int32 i = 0; i < Chess->Figures.Num(); i++)
 	{
-		if (Chess->Figures[i].Figure == Figure || Chess->Figures[i].Team == Team)
+		if (Chess->Figures[i].Location == Location || Chess->Figures[i].Team == Team)
 			continue;
 
 		FIntPoint L_EnemyLocation = Chess->Figures[i].Location;
@@ -61,7 +61,6 @@ bool FFigure::IsMoveSafe(FIntPoint Move) const
 			
 			break;
 
-			//No work
 		case EFigureType::Knight:
 
 			int knightMoves[8][2] = {
@@ -81,11 +80,45 @@ bool FFigure::IsMoveSafe(FIntPoint Move) const
 			break;
 		}
 
-		if (L_Return)
-			break;
+		if (L_Return) {
+		
+			FIntPoint FF = Move - L_EnemyLocation;
+
+			int length = FMath::TruncToInt(FMath::Sqrt(FMath::Pow(FF.X, 2.f) + FMath::Pow(FF.Y, 2.f)));
+
+			if (length == 0)
+				return false;
+
+			FIntPoint Direction = FIntPoint::ZeroValue;
+
+			if (FF.X != 0)
+				Direction.X = FF.X / FMath::Abs(FF.X);
+
+			if (FF.Y != 0)
+				Direction.Y = FF.Y / FMath::Abs(FF.Y);
+
+			for (int32 x = 1; x < length; x++)
+			{
+				FIntPoint CurrentPoint = L_EnemyLocation + (Direction * x);
+
+				for (int32 b = 0; b < Chess->Figures.Num(); b++)
+				{
+					if (Chess->Figures[b].Location == L_EnemyLocation || Chess->Figures[b].Location == Location)
+						continue;
+
+					if (Chess->Figures[b].Location == CurrentPoint)
+					{
+						return false;
+					}
+				}
+			}
+
+			return L_Return;
+		}
 	}
 
 	return L_Return;
+
 }
 
 void FFigure::GetMoves(TArray<FIntPoint>& Moves, bool IsAttackKing) const {

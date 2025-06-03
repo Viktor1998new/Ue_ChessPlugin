@@ -153,7 +153,13 @@ bool AChessActor::Move(FIntPoint From, FIntPoint To)
 	if (length == 0)
 		return false;
 
-	FIntPoint Direction = FF / FMath::Abs(length);
+	FIntPoint Direction = FIntPoint::ZeroValue;
+
+	if (FF.X != 0)
+		Direction.X = FF.X / FMath::Abs(FF.X);
+	
+	if (FF.Y != 0)
+		Direction.Y = FF.Y / FMath::Abs(FF.Y);
 
 	bool L_IsMove = false;
 
@@ -169,21 +175,19 @@ bool AChessActor::Move(FIntPoint From, FIntPoint To)
 				L_IsMove = L_Active->Location.Y == To.Y;
 			}
 		}
-		else
-		{
-			if (L_Active->Team == 0 && Direction.X > 0 && length == 1) {
-				L_IsMove = L_Active->Location.X == To.X || L_Active->Location.Y == To.Y || FMath::Abs(L_Active->Location.X - To.X) == FMath::Abs(L_Active->Location.Y - To.Y);
-			}
-			else if (L_Active->Team == 1 && Direction.X < 0 && length == 1) {
-				L_IsMove = L_Active->Location.X == To.X || L_Active->Location.Y == To.Y || FMath::Abs(L_Active->Location.X - To.X) == FMath::Abs(L_Active->Location.Y - To.Y);
-			}
+		
+		if (L_Active->Team == 0 && Direction.X > 0 && length == 1) {
+			L_IsMove = L_Active->Location.X == To.X || L_Active->Location.Y == To.Y || FMath::Abs(L_Active->Location.X - To.X) == FMath::Abs(L_Active->Location.Y - To.Y);
 		}
-
+		else if (L_Active->Team == 1 && Direction.X < 0 && length == 1) {
+			L_IsMove = L_Active->Location.X == To.X || L_Active->Location.Y == To.Y || FMath::Abs(L_Active->Location.X - To.X) == FMath::Abs(L_Active->Location.Y - To.Y);
+		}
+		
 		break;
 	
 	case EFigureType::Bishop:
 
-		L_IsMove = FMath::Abs(L_Active->Location.X - To.X) == FMath::Abs(L_Active->Location.X - To.X);
+		L_IsMove = FMath::Abs(L_Active->Location.X - To.X) == FMath::Abs(L_Active->Location.Y - To.Y);
 
 		break;
 
@@ -201,7 +205,7 @@ bool AChessActor::Move(FIntPoint From, FIntPoint To)
 	
 	case EFigureType::King:
 
-		if (length == 1 && L_Active->IsMoveSafe(To)) {
+		if (length == 1) {
 			L_IsMove = L_Active->Location.X == To.X || L_Active->Location.Y == To.Y || FMath::Abs(L_Active->Location.X - To.X) == FMath::Abs(L_Active->Location.Y - To.Y);
 		}
 
@@ -259,9 +263,40 @@ bool AChessActor::Move(FIntPoint From, FIntPoint To)
 				}
 				return false;
 			}
+
 			break;
 
 		case EFigureType::Knight:
+
+			for (int32 i = 0; i < Figures.Num(); i++)
+			{
+				if (Figures[i].Location == From)
+					continue;
+
+				if (Figures[i].Location == To)
+				{
+					if (Figures[i].Team != L_Active->Team) {
+
+						Figures[i].Figure->DestroyComponent();
+						L_Active->SetLocation(L_Position, SizeGrid, To, OffsetZ);
+						Figures.RemoveAt(i);
+						bIsAttackKing = IsAttackKing(*L_Active);
+
+						ActiveTeam = ActiveTeam == 0 ? 1 : 0;
+
+						return true;
+					}
+					else {
+						return false;
+					}
+				}
+			}
+
+			break;
+		case EFigureType::King:
+
+			if (length != 1)
+				return false;
 
 			for (int32 i = 0; i < Figures.Num(); i++)
 			{
