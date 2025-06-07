@@ -34,7 +34,10 @@ struct CHESSPLUGIN_API FFigure {
 		FIntPoint Location;
 
 	UPROPERTY()
-		bool IsMove;
+		bool IsMove = false;
+
+	UPROPERTY()
+		bool IsDestroy = false;
 
 	FFigure();
 
@@ -42,7 +45,7 @@ struct CHESSPLUGIN_API FFigure {
 
 	void GetMoves(TArray<FIntPoint>& Moves, bool IsAttackKing) const;
 
-	void SetLocation(FVector2D Position, float SizeGrid, FIntPoint To, float OffsetZ);
+	void SetLocation(FIntPoint NewLocation);
 
 	bool IsMoveSafe(FIntPoint Move) const;
 };

@@ -134,10 +134,7 @@ bool AChessActor::Move(FIntPoint From, FIntPoint To)
 	FVector2D L_Position = L_Start + FVector2D(L_GripCenter);
 	
 	FFigure* L_Active = nullptr;
-	
 	FFigure* L_King = nullptr;
-
-	TArray<FIntPoint> L_Moves;
 
 	for (int32 i = 0; i < Figures.Num(); i++) {
 
@@ -295,15 +292,6 @@ bool AChessActor::Move(FIntPoint From, FIntPoint To)
 			if (length != 1)
 				return false;
 
-			for (int32 i = 0; i < Figures.Num(); i++)
-			{
-				if (Figures[i].Location == From)
-					continue;
-
-				if (Figures[i].Location == To)
-					L_IndexDestroy = i;
-			}
-
 			break;
 
 		case EFigureType::Bishop:
@@ -313,8 +301,6 @@ bool AChessActor::Move(FIntPoint From, FIntPoint To)
 			for (int32 x = 1; x < FMath::Abs(length + 1); x++)
 			{
 				FIntPoint CurrentPoint = From + (Direction * x);
-
-				L_Moves.Add(CurrentPoint);
 
 				for (int32 i = 0; i < Figures.Num(); i++)
 				{
@@ -332,37 +318,35 @@ bool AChessActor::Move(FIntPoint From, FIntPoint To)
 	
 		if (L_IndexDestroy != INDEX_NONE) {
 			
-			if (Figures[L_IndexDestroy].Team != L_Active->Team) {
+			if (Figures[L_IndexDestroy].Team == L_Active->Team)
+				return false;
 
-				L_Active->SetLocation(L_Position, SizeGrid, To, OffsetZ);
+			L_Active->SetLocation(To);
+			Figures[L_IndexDestroy].IsDestroy = true;
 
-				if (L_King->IsMoveSafe(L_OldLocation)) {
-					L_Active->SetLocation(L_Position, SizeGrid, L_OldLocation, OffsetZ);
-					return false;
-				}
-
-				Figures[L_IndexDestroy].Figure->DestroyComponent();
-				Figures.RemoveAt(L_IndexDestroy);
-				bIsAttackKing = IsAttackKing(*L_Active);
-
-				ActiveTeam = ActiveTeam == 0 ? 1 : 0;
-				L_Active->IsMove = true;
-				return true;
-			}
-		}
-		else {
-			L_Active->SetLocation(L_Position, SizeGrid, To, OffsetZ);
-			
-			if (L_King->IsMoveSafe(L_OldLocation)) {
-				L_Active->SetLocation(L_Position, SizeGrid, L_OldLocation, OffsetZ);
+			if (L_King->IsMoveSafe(L_King->Location)) {
+				L_Active->SetLocation(L_OldLocation);
+				Figures[L_IndexDestroy].IsDestroy = false;
 				return false;
 			}
-			
-			bIsAttackKing = IsAttackKing(*L_Active);
-			ActiveTeam = ActiveTeam == 0 ? 1 : 0;
-			L_Active->IsMove = true;
-			return true;
+
+			Figures[L_IndexDestroy].Figure->DestroyComponent();
+			Figures.RemoveAt(L_IndexDestroy);
 		}
+		else {
+			L_Active->SetLocation(To);
+			
+			if (L_King->IsMoveSafe(L_King->Location)) {
+				L_Active->SetLocation(L_OldLocation);
+				return false;
+			}
+		}
+
+		L_Active->Figure->SetRelativeLocation(FVector(L_Position + FVector2D(SizeGrid * L_Active->Location.X, SizeGrid * L_Active->Location.Y), OffsetZ));
+		bIsAttackKing = IsAttackKing(*L_Active);
+		ActiveTeam = ActiveTeam == 0 ? 1 : 0;
+		L_Active->IsMove = true;
+		return true;
 	}
 
 	return false;
@@ -414,7 +398,7 @@ bool AChessActor::IsAttackKing(FFigure Figure)
 	FIntPoint L_LocationKing;
 	for (int32 f = 0; f < Figures.Num(); f++) {
 
-		if (Figure.Team == Figures[f].Team && Figures[f].Type == EFigureType::King) {
+		if (Figure.Team != Figures[f].Team && Figures[f].Type == EFigureType::King) {
 			L_LocationKing = Figures[f].Location;
 			break;
 

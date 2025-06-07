@@ -23,10 +23,9 @@ FFigure::FFigure(AChessActor* Chess, UStaticMeshComponent* Figure, const uint8& 
 {
 }
 
-void FFigure::SetLocation(FVector2D Position, float SizeGrid, FIntPoint To, float OffsetZ){
+void FFigure::SetLocation(FIntPoint NewLocation){
 
-	Figure->SetRelativeLocation(FVector(Position + FVector2D(SizeGrid * To.X, SizeGrid * To.Y), OffsetZ));
-	Location = To;
+	Location = NewLocation;
 }
 
 bool FFigure::IsMoveSafe(FIntPoint Move) const
@@ -35,7 +34,7 @@ bool FFigure::IsMoveSafe(FIntPoint Move) const
 
 	for (int32 i = 0; i < Chess->Figures.Num(); i++)
 	{
-		if (Chess->Figures[i].Location == Location || Chess->Figures[i].Team == Team)
+		if (Chess->Figures[i].Location == Location || Chess->Figures[i].Team == Team || Chess->Figures[i].IsDestroy)
 			continue;
 
 		FIntPoint L_EnemyLocation = Chess->Figures[i].Location;
@@ -102,7 +101,7 @@ bool FFigure::IsMoveSafe(FIntPoint Move) const
 
 				for (int32 b = 0; b < Chess->Figures.Num(); b++)
 				{
-					if ((Chess->Figures[b].Location == L_EnemyLocation || Chess->Figures[b].Location == Location) && Chess->Figures[b].Team != Team)
+					if (Chess->Figures[b].Location == L_EnemyLocation || Chess->Figures[b].Location == Location)
 						continue;
 
 					if (Chess->Figures[b].Location == CurrentPoint)
