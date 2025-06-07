@@ -116,6 +116,11 @@ void AChessActor::OnConstruction(const FTransform& Transform)
 	DrawDebugBox(GetWorld(), GetActorLocation(), FVector(FVector2D(FieldSize / 2.0f), 2.0f), FColor::Red, false, INFINITY);
 }
 
+bool AChessActor::CheckMove()
+{
+	return false;
+}
+
 void AChessActor::BeginPlay()
 {
 	Super::BeginPlay();
@@ -129,6 +134,8 @@ bool AChessActor::Move(FIntPoint From, FIntPoint To)
 	FVector2D L_Position = L_Start + FVector2D(L_GripCenter);
 	
 	FFigure* L_Active = nullptr;
+	
+	FFigure* L_King = nullptr;
 
 	TArray<FIntPoint> L_Moves;
 
@@ -142,24 +149,33 @@ bool AChessActor::Move(FIntPoint From, FIntPoint To)
 				L_Active = &Figures[i];
 		}
 	}
-
+	
 	if (L_Active == nullptr)
 		return false;
 
-	FIntPoint FF = To - L_Active->Location;
+	for (int32 i = 0; i < Figures.Num(); i++) {
 
-	int length = FMath::TruncToInt(FMath::Sqrt(FMath::Pow(FF.X, 2.f) + FMath::Pow(FF.Y, 2.f)));
+		if (Figures[i].Team == ActiveTeam && Figures[i].Type == EFigureType::King)
+		{
+			L_King = &Figures[i];
+			break;
+		}
+	}
+
+	FIntPoint VectorLength = To - L_Active->Location;
+
+	int length = FMath::TruncToInt(FMath::Sqrt(FMath::Pow(VectorLength.X, 2.f) + FMath::Pow(VectorLength.Y, 2.f)));
 
 	if (length == 0)
 		return false;
 
 	FIntPoint Direction = FIntPoint::ZeroValue;
 
-	if (FF.X != 0)
-		Direction.X = FF.X / FMath::Abs(FF.X);
+	if (VectorLength.X != 0)
+		Direction.X = VectorLength.X / FMath::Abs(VectorLength.X);
 	
-	if (FF.Y != 0)
-		Direction.Y = FF.Y / FMath::Abs(FF.Y);
+	if (VectorLength.Y != 0)
+		Direction.Y = VectorLength.Y / FMath::Abs(VectorLength.Y);
 
 	bool L_IsMove = false;
 
@@ -231,6 +247,20 @@ bool AChessActor::Move(FIntPoint From, FIntPoint To)
 	}
 
 	if (L_IsMove) {
+
+		int32 L_IndexDestroy = INDEX_NONE;
+
+		for (int32 i = 0; i < Figures.Num(); i++)
+		{
+			if (Figures[i].Location == From)
+				continue;
+
+			if (Figures[i].Location == To)
+			{
+				L_IndexDestroy = i;
+			}
+		}
+
 		switch (L_Active->Type)
 		{
 
@@ -238,30 +268,12 @@ bool AChessActor::Move(FIntPoint From, FIntPoint To)
 
 			if (L_Active->Location.Y != To.Y) {
 
-				for (int32 i = 0; i < Figures.Num(); i++)
-				{
-					if (Figures[i].Location == From)
-						continue;
-
-					if (Figures[i].Location == To)
-					{
-						if (Figures[i].Team != L_Active->Team) {
-
-							Figures[i].Figure->DestroyComponent();
-							L_Active->SetLocation(L_Position, SizeGrid, To, OffsetZ);
-							Figures.RemoveAt(i);
-							bIsAttackKing = IsAttackKing(*L_Active);
-
-							ActiveTeam = ActiveTeam == 0 ? 1 : 0;
-
-							return true;
-						}
-						else {
-							return false;
-						}
-					}
-				}
-				return false;
+				if(L_IndexDestroy == INDEX_NONE)
+					return false;
+			}
+			else {
+				if (L_IndexDestroy != INDEX_NONE)
+					return false;
 			}
 
 			break;
@@ -274,22 +286,7 @@ bool AChessActor::Move(FIntPoint From, FIntPoint To)
 					continue;
 
 				if (Figures[i].Location == To)
-				{
-					if (Figures[i].Team != L_Active->Team) {
-
-						Figures[i].Figure->DestroyComponent();
-						L_Active->SetLocation(L_Position, SizeGrid, To, OffsetZ);
-						Figures.RemoveAt(i);
-						bIsAttackKing = IsAttackKing(*L_Active);
-
-						ActiveTeam = ActiveTeam == 0 ? 1 : 0;
-
-						return true;
-					}
-					else {
-						return false;
-					}
-				}
+					L_IndexDestroy = i;
 			}
 
 			break;
@@ -304,22 +301,7 @@ bool AChessActor::Move(FIntPoint From, FIntPoint To)
 					continue;
 
 				if (Figures[i].Location == To)
-				{
-					if (Figures[i].Team != L_Active->Team) {
-
-						Figures[i].Figure->DestroyComponent();
-						L_Active->SetLocation(L_Position, SizeGrid, To, OffsetZ);
-						Figures.RemoveAt(i);
-						bIsAttackKing = IsAttackKing(*L_Active);
-
-						ActiveTeam = ActiveTeam == 0 ? 1 : 0;
-
-						return true;
-					}
-					else {
-						return false;
-					}
-				}
+					L_IndexDestroy = i;
 			}
 
 			break;
@@ -340,31 +322,47 @@ bool AChessActor::Move(FIntPoint From, FIntPoint To)
 						continue;
 
 					if (Figures[i].Location == CurrentPoint)
-					{
-						if (Figures[i].Team != L_Active->Team) {
-
-							Figures[i].Figure->DestroyComponent();
-							L_Active->SetLocation(L_Position, SizeGrid, To, OffsetZ);
-							Figures.RemoveAt(i);
-							bIsAttackKing = IsAttackKing(*L_Active);
-
-							ActiveTeam = ActiveTeam == 0 ? 1 : 0;
-
-							return true;
-						}
-						else {
-							return false;
-						}
-					}
+						L_IndexDestroy = i;
 				}
 			}
 			break;
 		}
 	
-		L_Active->SetLocation(L_Position, SizeGrid, To, OffsetZ);
-		bIsAttackKing = IsAttackKing(*L_Active);
-		ActiveTeam = ActiveTeam == 0 ? 1 : 0;
-		return true;
+		FIntPoint L_OldLocation = L_Active->Location;
+	
+		if (L_IndexDestroy != INDEX_NONE) {
+			
+			if (Figures[L_IndexDestroy].Team != L_Active->Team) {
+
+				L_Active->SetLocation(L_Position, SizeGrid, To, OffsetZ);
+
+				if (L_King->IsMoveSafe(L_OldLocation)) {
+					L_Active->SetLocation(L_Position, SizeGrid, L_OldLocation, OffsetZ);
+					return false;
+				}
+
+				Figures[L_IndexDestroy].Figure->DestroyComponent();
+				Figures.RemoveAt(L_IndexDestroy);
+				bIsAttackKing = IsAttackKing(*L_Active);
+
+				ActiveTeam = ActiveTeam == 0 ? 1 : 0;
+				L_Active->IsMove = true;
+				return true;
+			}
+		}
+		else {
+			L_Active->SetLocation(L_Position, SizeGrid, To, OffsetZ);
+			
+			if (L_King->IsMoveSafe(L_OldLocation)) {
+				L_Active->SetLocation(L_Position, SizeGrid, L_OldLocation, OffsetZ);
+				return false;
+			}
+			
+			bIsAttackKing = IsAttackKing(*L_Active);
+			ActiveTeam = ActiveTeam == 0 ? 1 : 0;
+			L_Active->IsMove = true;
+			return true;
+		}
 	}
 
 	return false;
@@ -413,17 +411,19 @@ bool AChessActor::IsAttackKing(FFigure Figure)
 
 	Figure.GetMoves(L_Moves, false);
 
-	for (int32 i = 0; i < L_Moves.Num(); i++) {
+	FIntPoint L_LocationKing;
+	for (int32 f = 0; f < Figures.Num(); f++) {
 
-		for (int32 f = 0; f < Figures.Num(); f++) {
-
-			if (Figure.Team == Figures[f].Team || Figures[f].Type != EFigureType::King)
-				continue;
-			
-			if (Figures[f].Location == L_Moves[i])
-				return true;
+		if (Figure.Team == Figures[f].Team && Figures[f].Type == EFigureType::King) {
+			L_LocationKing = Figures[f].Location;
+			break;
 
 		}
+	}
+
+	for (int32 i = 0; i < L_Moves.Num(); i++) {
+		if (L_LocationKing == L_Moves[i])
+			return true;
 	}
 
 	return false;

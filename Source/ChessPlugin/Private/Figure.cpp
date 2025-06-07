@@ -27,7 +27,6 @@ void FFigure::SetLocation(FVector2D Position, float SizeGrid, FIntPoint To, floa
 
 	Figure->SetRelativeLocation(FVector(Position + FVector2D(SizeGrid * To.X, SizeGrid * To.Y), OffsetZ));
 	Location = To;
-	IsMove = true;
 }
 
 bool FFigure::IsMoveSafe(FIntPoint Move) const
@@ -82,20 +81,20 @@ bool FFigure::IsMoveSafe(FIntPoint Move) const
 
 		if (L_Return) {
 		
-			FIntPoint FF = Move - L_EnemyLocation;
+			FIntPoint VectorLength = Move - L_EnemyLocation;
 
-			int length = FMath::TruncToInt(FMath::Sqrt(FMath::Pow(FF.X, 2.f) + FMath::Pow(FF.Y, 2.f)));
+			int length = FMath::TruncToInt(FMath::Sqrt(FMath::Pow(VectorLength.X, 2.f) + FMath::Pow(VectorLength.Y, 2.f)));
 
 			if (length == 0)
 				return false;
 
 			FIntPoint Direction = FIntPoint::ZeroValue;
 
-			if (FF.X != 0)
-				Direction.X = FF.X / FMath::Abs(FF.X);
+			if (VectorLength.X != 0)
+				Direction.X = VectorLength.X / FMath::Abs(VectorLength.X);
 
-			if (FF.Y != 0)
-				Direction.Y = FF.Y / FMath::Abs(FF.Y);
+			if (VectorLength.Y != 0)
+				Direction.Y = VectorLength.Y / FMath::Abs(VectorLength.Y);
 
 			for (int32 x = 1; x < length; x++)
 			{
@@ -103,7 +102,7 @@ bool FFigure::IsMoveSafe(FIntPoint Move) const
 
 				for (int32 b = 0; b < Chess->Figures.Num(); b++)
 				{
-					if (Chess->Figures[b].Location == L_EnemyLocation || Chess->Figures[b].Location == Location)
+					if ((Chess->Figures[b].Location == L_EnemyLocation || Chess->Figures[b].Location == Location) && Chess->Figures[b].Team != Team)
 						continue;
 
 					if (Chess->Figures[b].Location == CurrentPoint)

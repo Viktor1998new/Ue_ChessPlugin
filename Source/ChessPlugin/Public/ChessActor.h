@@ -104,6 +104,10 @@ public:
 	UPROPERTY(VisibleAnywhere, BlueprintReadOnly, Category = "Components")
 		TArray<FFigure> Figures;
 
+private:
+
+	bool CheckMove();
+
 protected:
 
 	virtual void BeginPlay() override;
