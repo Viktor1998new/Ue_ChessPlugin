@@ -46,11 +46,11 @@ void AChessActor::OnConstruction(const FTransform& Transform)
 			AddInstanceComponent(L_Figure_Pawn);
 			L_Figure_Pawn->RegisterComponent();
 			L_Figure_Pawn->CreationMethod = EComponentCreationMethod::Instance;
-			
+
 			Figures.Add(FFigure(this, L_Figure_Pawn, Team, Team == 0 ? FIntPoint(1, i) : FIntPoint(6, 7 - i), L_FigureT));
 			L_Figure_Pawn->AttachToComponent(RootComponent, FAttachmentTransformRules::SnapToTargetNotIncludingScale);
 			L_Figure_Pawn->SetStaticMesh(ChessData->GetFigureMesh(L_FigureT));
-			
+
 			if (Team == 0) {
 				L_Figure_Pawn->SetRelativeLocation(FVector(L_Position + FVector2D(SizeGrid, SizeGrid * i), OffsetZ));
 				L_Figure_Pawn->SetRelativeRotation(FRotator(0.0f, -OffsetYaw, 0.0f));
@@ -61,7 +61,7 @@ void AChessActor::OnConstruction(const FTransform& Transform)
 				L_Figure_Pawn->SetRelativeRotation(FRotator(0.0f, OffsetYaw, 0.0f));
 				L_Figure_Pawn->SetMaterial(0, ChessData->MaterialBlack);
 			}
-
+		
 			switch (i)
 			{
 			case 0:
@@ -343,7 +343,8 @@ bool AChessActor::Move(FIntPoint From, FIntPoint To)
 		}
 
 		L_Active->Figure->SetRelativeLocation(FVector(L_Position + FVector2D(SizeGrid * L_Active->Location.X, SizeGrid * L_Active->Location.Y), OffsetZ));
-		bIsAttackKing = IsAttackKing(*L_Active);
+		bIsCheckKing = IsCheckKing(*L_Active);
+
 		ActiveTeam = ActiveTeam == 0 ? 1 : 0;
 		L_Active->IsMove = true;
 		return true;
@@ -363,7 +364,7 @@ TArray<FIntPoint> AChessActor::GetMove(FIntPoint From)
 
 		if (Figures[i].Location == From) {
 
-			Figures[i].GetMoves(L_Moves, bIsAttackKing);
+			Figures[i].GetMoves(L_Moves, bIsCheckKing);
 
 			for (int32 b = 0; b < L_Moves.Num(); b++) {
 
@@ -389,7 +390,7 @@ bool AChessActor::IsCeilBusy(FIntPoint Location) const
 	return false;
 }
 
-bool AChessActor::IsAttackKing(FFigure Figure)
+bool AChessActor::IsCheckKing(FFigure Figure)
 {
 	TArray<FIntPoint> L_Moves;
 
@@ -406,8 +407,21 @@ bool AChessActor::IsAttackKing(FFigure Figure)
 	}
 
 	for (int32 i = 0; i < L_Moves.Num(); i++) {
-		if (L_LocationKing == L_Moves[i])
+		if (L_LocationKing == L_Moves[i]) {
+
+			FVector2D L_Start = FVector2D(FieldSize / 2.0f) * -1.0f;
+			float L_GripCenter = SizeGrid / 2.0f;
+
+			FIntPoint L_K = L_LocationKing * SizeGrid;
+			L_K += FIntPoint(L_Start.X + L_GripCenter, L_Start.Y + L_GripCenter);
+			
+			FIntPoint L_F = Figure.Location * SizeGrid;
+			L_F += FIntPoint(L_Start.X + L_GripCenter, L_Start.Y + L_GripCenter);
+
+			OnCheck(L_K, L_F);
+
 			return true;
+		}
 	}
 
 	return false;

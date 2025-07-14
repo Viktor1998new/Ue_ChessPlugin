@@ -93,7 +93,7 @@ public:
 		float SizeGrid;
 	
 	UPROPERTY(VisibleAnywhere, BlueprintReadOnly)
-		bool bIsAttackKing;
+		bool bIsCheckKing;
 
 	UPROPERTY(BlueprintReadWrite)
 		uint8 ActiveTeam;
@@ -104,27 +104,30 @@ public:
 	UPROPERTY(VisibleAnywhere, BlueprintReadOnly, Category = "Components")
 		TArray<FFigure> Figures;
 
-private:
-
-	bool CheckMove();
-
-protected:
-
-	virtual void BeginPlay() override;
-
 public:
+
+	void OnConstruction(const FTransform& Transform) override;
 
 	UFUNCTION(BlueprintCallable)
 		bool Move(FIntPoint From, FIntPoint To);
 		
 	UFUNCTION(BlueprintPure)
 		TArray<FIntPoint> GetMove(FIntPoint From);
-	
-	UFUNCTION()
+		
+	UFUNCTION(BlueprintPure)
 		bool IsCeilBusy(FIntPoint Location) const;
 
-	UFUNCTION()
-		bool IsAttackKing(FFigure Figure);
+protected:
 
-	void OnConstruction(const FTransform& Transform) override;
+	UFUNCTION(BlueprintImplementableEvent, Category = "Chess")
+		void OnCheck(FIntPoint KingLocaton, FIntPoint EnemyLocation);
+
+	virtual void BeginPlay() override;
+
+private:
+
+	bool CheckMove();
+
+	bool IsCheckKing(FFigure Figure);
+
 };

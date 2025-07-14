@@ -43,7 +43,7 @@ struct CHESSPLUGIN_API FFigure {
 
 	FFigure(AChessActor* Chess, UStaticMeshComponent* Figure, const uint8& Team, FIntPoint Location, EFigureType Type);
 
-	void GetMoves(TArray<FIntPoint>& Moves, bool IsAttackKing) const;
+	void GetMoves(TArray<FIntPoint>& Moves, bool IsCheckKing) const;
 
 	void SetLocation(FIntPoint NewLocation);
 
