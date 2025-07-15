@@ -6,13 +6,25 @@
 #include "ChessActor.generated.h"
 
 UCLASS()
-class CHESSPLUGIN_API UChessData : public UDataAsset
+class CHESS_API UChessData : public UDataAsset
 {
 	GENERATED_BODY()
 public:
 
+	/*UPROPERTY(EditAnywhere)
+		TSubclassOf<AChessActor> Chess = AChessActor::GetClass();*/
+
 	UPROPERTY(EditAnywhere)
 		UStaticMesh* Board;
+		
+	UPROPERTY(EditAnywhere, BlueprintReadOnly)
+		float FieldSize = 600;
+
+	UPROPERTY(EditAnywhere, BlueprintReadOnly)
+		float OffsetZ = 0.0f;
+
+	UPROPERTY(EditAnywhere, BlueprintReadOnly)
+		float OffsetYaw = 0.0f;
 
 	UPROPERTY(EditAnywhere, Category = "Figures")
 		UStaticMesh* Pawn;
@@ -67,9 +79,8 @@ public:
 	};
 };
 
-
 UCLASS()
-class CHESSPLUGIN_API AChessActor : public AActor
+class CHESS_API AChessActor : public AActor
 {
 	GENERATED_BODY()
 
@@ -79,15 +90,6 @@ public:
 
 	UPROPERTY(EditAnywhere, BlueprintReadOnly)
 		UChessData* ChessData;
-
-	UPROPERTY(EditAnywhere, BlueprintReadOnly)
-		float FieldSize = 600;
-
-	UPROPERTY(EditAnywhere, BlueprintReadOnly)
-		float OffsetZ = 0.0f;
-
-	UPROPERTY(EditAnywhere, BlueprintReadOnly)
-		float OffsetYaw = 0.0f;
 
 	UPROPERTY(VisibleAnywhere, BlueprintReadOnly)
 		float SizeGrid;

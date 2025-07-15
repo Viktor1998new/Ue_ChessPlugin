@@ -2,9 +2,9 @@
 
 using UnrealBuildTool;
 
-public class ChessPlugin : ModuleRules
+public class Chess : ModuleRules
 {
-	public ChessPlugin(ReadOnlyTargetRules Target) : base(Target)
+	public Chess(ReadOnlyTargetRules Target) : base(Target)
 	{
 		PCHUsage = ModuleRules.PCHUsageMode.UseExplicitOrSharedPCHs;
 		

@@ -14,7 +14,7 @@ enum class EFigureType : uint8 {
 };
 
 USTRUCT(BlueprintType)
-struct CHESSPLUGIN_API FFigure {
+struct CHESS_API FFigure {
 
 	GENERATED_BODY()
 

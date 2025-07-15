@@ -16,9 +16,15 @@
 	"Installed": false,
 	"Modules": [
 		{
-			"Name": "ChessPlugin",
+			"Name": "Chess",
 			"Type": "Runtime",
 			"LoadingPhase": "Default"
+		},
+{
+			"Name": "ChessEditor",
+			"Type": "Editor",
+			"LoadingPhase" : "PostEngineInit",
+			"WhitelistPlatforms": ["Win64"]
 		}
 	]
 }

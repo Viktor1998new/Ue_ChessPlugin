@@ -24,10 +24,10 @@ void AChessActor::OnConstruction(const FTransform& Transform)
 
 	Root->SetStaticMesh(ChessData->Board);
 
-	FVector2D L_Start = FVector2D(FieldSize / 2.0f) * -1.0f;
-	FVector2D L_End = FVector2D(FieldSize / 2.0f);
+	FVector2D L_Start = FVector2D(ChessData->FieldSize / 2.0f) * -1.0f;
+	FVector2D L_End = FVector2D(ChessData->FieldSize / 2.0f);
 
-	SizeGrid = FieldSize / 8.0f;
+	SizeGrid = ChessData->FieldSize / 8.0f;
 	float L_GripCenter = SizeGrid / 2.0f;
 
 	for (int32 Team = 0; Team < 2; Team++) {
@@ -52,13 +52,13 @@ void AChessActor::OnConstruction(const FTransform& Transform)
 			L_Figure_Pawn->SetStaticMesh(ChessData->GetFigureMesh(L_FigureT));
 
 			if (Team == 0) {
-				L_Figure_Pawn->SetRelativeLocation(FVector(L_Position + FVector2D(SizeGrid, SizeGrid * i), OffsetZ));
-				L_Figure_Pawn->SetRelativeRotation(FRotator(0.0f, -OffsetYaw, 0.0f));
+				L_Figure_Pawn->SetRelativeLocation(FVector(L_Position + FVector2D(SizeGrid, SizeGrid * i), ChessData->OffsetZ));
+				L_Figure_Pawn->SetRelativeRotation(FRotator(0.0f, -ChessData->OffsetYaw, 0.0f));
 				L_Figure_Pawn->SetMaterial(0, ChessData->MaterialWhite);
 			}
 			else {
-				L_Figure_Pawn->SetRelativeLocation(FVector(L_Position - FVector2D(SizeGrid, SizeGrid * i), OffsetZ));
-				L_Figure_Pawn->SetRelativeRotation(FRotator(0.0f, OffsetYaw, 0.0f));
+				L_Figure_Pawn->SetRelativeLocation(FVector(L_Position - FVector2D(SizeGrid, SizeGrid * i), ChessData->OffsetZ));
+				L_Figure_Pawn->SetRelativeRotation(FRotator(0.0f, ChessData->OffsetYaw, 0.0f));
 				L_Figure_Pawn->SetMaterial(0, ChessData->MaterialBlack);
 			}
 		
@@ -100,20 +100,20 @@ void AChessActor::OnConstruction(const FTransform& Transform)
 			L_Figure->SetStaticMesh(ChessData->GetFigureMesh(L_FigureT));
 
 			if (Team == 0) {
-				L_Figure->SetRelativeLocation(FVector(L_Position + FVector2D(0, SizeGrid * i), OffsetZ));
-				L_Figure->SetRelativeRotation(FRotator(0.0f, -OffsetYaw, 0.0f));
+				L_Figure->SetRelativeLocation(FVector(L_Position + FVector2D(0, SizeGrid * i), ChessData->OffsetZ));
+				L_Figure->SetRelativeRotation(FRotator(0.0f, -ChessData->OffsetYaw, 0.0f));
 				L_Figure->SetMaterial(0, ChessData->MaterialWhite);
 			}
 			else {
-				L_Figure->SetRelativeLocation(FVector(L_Position - FVector2D(0, SizeGrid * i), OffsetZ));
-				L_Figure->SetRelativeRotation(FRotator(0.0f, OffsetYaw, 0.0f));
+				L_Figure->SetRelativeLocation(FVector(L_Position - FVector2D(0, SizeGrid * i), ChessData->OffsetZ));
+				L_Figure->SetRelativeRotation(FRotator(0.0f, ChessData->OffsetYaw, 0.0f));
 				L_Figure->SetMaterial(0, ChessData->MaterialBlack);
 			}
 
 		}
 	}
 
-	DrawDebugBox(GetWorld(), GetActorLocation(), FVector(FVector2D(FieldSize / 2.0f), 2.0f), FColor::Red, false, INFINITY);
+	DrawDebugBox(GetWorld(), GetActorLocation(), FVector(FVector2D(ChessData->FieldSize / 2.0f), 2.0f), FColor::Red, false, INFINITY);
 }
 
 bool AChessActor::CheckMove()
@@ -129,7 +129,7 @@ void AChessActor::BeginPlay()
 
 bool AChessActor::Move(FIntPoint From, FIntPoint To)
 {
-	FVector2D L_Start = FVector2D(FieldSize / 2.0f) * -1.0f;
+	FVector2D L_Start = FVector2D(ChessData->FieldSize / 2.0f) * -1.0f;
 	float L_GripCenter = SizeGrid / 2.0f;
 	FVector2D L_Position = L_Start + FVector2D(L_GripCenter);
 	
@@ -342,7 +342,7 @@ bool AChessActor::Move(FIntPoint From, FIntPoint To)
 			}
 		}
 
-		L_Active->Figure->SetRelativeLocation(FVector(L_Position + FVector2D(SizeGrid * L_Active->Location.X, SizeGrid * L_Active->Location.Y), OffsetZ));
+		L_Active->Figure->SetRelativeLocation(FVector(L_Position + FVector2D(SizeGrid * L_Active->Location.X, SizeGrid * L_Active->Location.Y), ChessData->OffsetZ));
 		bIsCheckKing = IsCheckKing(*L_Active);
 
 		ActiveTeam = ActiveTeam == 0 ? 1 : 0;
@@ -355,7 +355,7 @@ bool AChessActor::Move(FIntPoint From, FIntPoint To)
 
 TArray<FIntPoint> AChessActor::GetMove(FIntPoint From)
 {
-	FVector2D L_Start = FVector2D(FieldSize / 2.0f) * -1.0f;
+	FVector2D L_Start = FVector2D(ChessData->FieldSize / 2.0f) * -1.0f;
 	float L_GripCenter = SizeGrid / 2.0f;
 
 	TArray<FIntPoint> L_Moves;
@@ -409,7 +409,7 @@ bool AChessActor::IsCheckKing(FFigure Figure)
 	for (int32 i = 0; i < L_Moves.Num(); i++) {
 		if (L_LocationKing == L_Moves[i]) {
 
-			FVector2D L_Start = FVector2D(FieldSize / 2.0f) * -1.0f;
+			FVector2D L_Start = FVector2D(ChessData->FieldSize / 2.0f) * -1.0f;
 			float L_GripCenter = SizeGrid / 2.0f;
 
 			FIntPoint L_K = L_LocationKing * SizeGrid;
