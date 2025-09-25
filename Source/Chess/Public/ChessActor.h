@@ -85,7 +85,7 @@ class CHESS_API AChessActor : public AActor
 	GENERATED_BODY()
 
 public:
-	// Sets default values for this actor's properties
+
 	AChessActor();
 
 	UPROPERTY(EditAnywhere, BlueprintReadOnly)
@@ -121,10 +121,12 @@ public:
 
 protected:
 
-	UFUNCTION(BlueprintImplementableEvent, Category = "Chess")
-		void OnCheck(FIntPoint KingLocaton, FIntPoint EnemyLocation);
-
 	virtual void BeginPlay() override;
+
+	virtual	void OnCheck(FIntPoint KingLocaton, FIntPoint EnemyLocation);
+
+	UFUNCTION(BlueprintImplementableEvent, meta = (DisplayName = "OnCheck"))
+		void ReceiveOnCheck(FIntPoint KingLocaton, FIntPoint EnemyLocation);
 
 private:
 

@@ -5,6 +5,8 @@
 #include "EditorViewportTabContent.h"
 #include "SAssetEditorViewport.h"
 
+const FName MyToolbarTabId(TEXT("Toolbar"));
+
 void FChessToolKit::InitEditor(const TArray<UObject*>& InObjects)
 {
 	ChessData = Cast<UChessData>(InObjects[0]);
@@ -13,6 +15,13 @@ void FChessToolKit::InitEditor(const TArray<UObject*>& InObjects)
 		->AddArea
 		(
 			FTabManager::NewPrimaryArea()->SetOrientation(Orient_Vertical)
+			->Split
+			(
+				FTabManager::NewStack()
+				->SetSizeCoefficient(0.1f)
+				->SetHideTabWell(true)
+				->AddTab(MyToolbarTabId, ETabState::OpenedTab)
+			)
 			->Split
 			(
 				FTabManager::NewSplitter()
@@ -58,11 +67,13 @@ void FChessToolKit::RegisterTabSpawners(const TSharedRef<class FTabManager>& InT
 	InTabManager->RegisterTabSpawner("ChessDataDetailsTab", FOnSpawnTab::CreateLambda([=](const FSpawnTabArgs&)
 	{
 		return SNew(SDockTab)
+			.Icon((FEditorStyle::GetBrush("PropertyEditor.Properties.TabIcon")))
 			[
 				DetailsView
 			];
 	}))
 	.SetDisplayName(INVTEXT("Details"))
+	
 	.SetGroup(WorkspaceMenuCategory.ToSharedRef());
 	
 	TSharedPtr< FEditorViewportTabContent> ViewportTabContent = MakeShareable(new FEditorViewportTabContent());

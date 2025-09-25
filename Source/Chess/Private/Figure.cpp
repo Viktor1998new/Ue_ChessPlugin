@@ -45,6 +45,7 @@ bool FFigure::IsMoveSafe(FIntPoint Move) const
 
 		switch (Chess->Figures[i].Type)
 		{
+
 		case EFigureType::Pawn:
 		
 			if (Team != 0) 
@@ -52,6 +53,9 @@ bool FFigure::IsMoveSafe(FIntPoint Move) const
 			else
 				L_Return = Move == L_EnemyLocation - FIntPoint(1, -1) || Move == L_EnemyLocation - FIntPoint(1, 1);
 			
+			if (L_Return)
+				return true;
+
 			break;
 
 		case EFigureType::Bishop:
@@ -83,8 +87,7 @@ bool FFigure::IsMoveSafe(FIntPoint Move) const
 				int newX = L_EnemyLocation.X + knightMove[0];
 				int newY = L_EnemyLocation.Y + knightMove[1];
 				if (newX == Move.X && newY == Move.Y) {
-					L_Return = true;
-					break;
+					return true;
 				}
 			}
 

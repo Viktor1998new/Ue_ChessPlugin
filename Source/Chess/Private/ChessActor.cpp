@@ -34,10 +34,9 @@ void AChessActor::OnConstruction(const FTransform& Transform)
 
 		FVector2D L_Position = L_Start + FVector2D(L_GripCenter);
 
-		if (Team == 1) {
+		if (Team == 1)
 			L_Position = L_End - FVector2D(L_GripCenter);
-		}
-
+		
 		for (int32 i = 0; i < 8; i++)
 		{
 			EFigureType L_FigureT = EFigureType::Pawn;
@@ -125,6 +124,11 @@ void AChessActor::BeginPlay()
 {
 	Super::BeginPlay();
 
+}
+
+void AChessActor::OnCheck(FIntPoint KingLocaton, FIntPoint EnemyLocation)
+{
+	ReceiveOnCheck(KingLocaton, EnemyLocation);
 }
 
 bool AChessActor::Move(FIntPoint From, FIntPoint To)
